@@ -1,7 +1,17 @@
 import { useState } from "react";
+import { useTodosDispatch } from "../context/TodosContext";
+import { createTodo } from "../api/todos";
 
-export default function TodoHeader({ onCreate }) {
+export default function TodoHeader() {
   const [todo, setTodo] = useState("");
+  const dispatch = useTodosDispatch();
+  const onCreate = async (data) => {
+    const response = await createTodo({ text: data, completed: false });
+    dispatch({
+      type: "added",
+      data: response.data,
+    });
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     onCreate(todo);
