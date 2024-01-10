@@ -2,7 +2,7 @@ import TodoItem from "./TodoItem";
 
 export default function TodoList({ todos, onDelete, onEdit }) {
   return (
-    <ul className="flex flex-col gap-y-1">
+    <ul className="max-w-7xl mx-auto flex flex-col gap-y-1">
       {todos.map((todo) => (
         <TodoItem
           key={todo.id}
