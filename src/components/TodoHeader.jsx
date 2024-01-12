@@ -1,21 +1,25 @@
 import { useState } from "react";
-import { useTodosDispatch } from "../context/TodosContext";
-import { createTodo } from "../api/todos";
+import { useDispatch } from "react-redux";
+import { addTodo } from "../redux/thunks/todoThunk";
 
 export default function TodoHeader() {
-  const [todo, setTodo] = useState("");
-  const dispatch = useTodosDispatch();
-  const onCreate = async (data) => {
-    const response = await createTodo({ text: data, completed: false });
-    dispatch({
-      type: "added",
-      data: response.data,
-    });
-  };
-  const handleSubmit = (e) => {
+  const dispatch = useDispatch();
+  const [text, setText] = useState("");
+  const [addStatus, setAddStatus] = useState("idle");
+  const canSave = [text].every(Boolean) && addStatus === "idle";
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onCreate(todo);
-    setTodo("");
+    if (canSave) {
+      try {
+        setAddStatus("pending");
+        await dispatch(addTodo({ text, completed: false })).unwrap();
+        setText("");
+      } catch (error) {
+        console.log(`Failed to save the todo:`, error.message);
+      } finally {
+        setAddStatus("idle");
+      }
+    }
   };
   return (
     <div className="max-w-7xl mx-auto bg-indigo-700 py-20 px-5">
@@ -25,14 +29,17 @@ export default function TodoHeader() {
       <form onSubmit={handleSubmit} className="flex gap-x-2 mt-5">
         <input
           type="text"
-          value={todo}
-          onChange={(e) => setTodo(e.target.value)}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
           placeholder="Add todo"
           className="h-12 rounded-md w-full px-3 font-medium"
         />
         <button
           type="submit"
-          className="bg-green-500 h-12 rounded px-4 font-semibold"
+          className={`h-12 rounded px-4 font-semibold ${
+            addStatus === "idle" ? "bg-green-500" : "bg-slate-500"
+          }`}
+          disabled={addStatus !== "idle"}
         >
           SUBMIT
         </button>
